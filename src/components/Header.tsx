@@ -15,6 +15,11 @@ const Header = () => {
 
   const isActive = (path: string) => location.pathname === path;
 
+  // Only show header on home page
+  if (location.pathname !== "/") {
+    return null;
+  }
+
   return (
     <header className="sticky top-0 z-50 w-full bg-card/95 backdrop-blur-sm border-b border-border shadow-sm">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
