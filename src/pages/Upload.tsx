@@ -1,6 +1,10 @@
+import ReactMarkdown from "react-markdown";
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import FeatureCard from "@/components/FeatureCard";
+import summarizationIcon from "@/assets/summarization-icon.png";
+import highlightingIcon from "@/assets/highlighting-icon.png";
 import {
   Upload as UploadIcon,
   FileText,
@@ -8,9 +12,14 @@ import {
   CheckCircle,
   AlertCircle,
   Shield,
-  Clock,
   Zap,
 } from "lucide-react";
+import {
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
+} from "@/components/ui/accordion";
 
 const Upload = () => {
   const [dragActive, setDragActive] = useState(false);
@@ -18,12 +27,14 @@ const Upload = () => {
   const [loading, setLoading] = useState(false);
   const [summary, setSummary] = useState<string | null>(null);
   const [risks, setRisks] = useState<string | null>(null);
+  const [clauses, setClauses] = useState<any[] | null>(null);
   const [docId, setDocId] = useState<string | null>(null);
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // === File Handlers ===
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -50,6 +61,7 @@ const Upload = () => {
     setUploadedFile(null);
     setSummary(null);
     setRisks(null);
+    setClauses(null);
     setDocId(null);
     setAnswer(null);
     if (fileInputRef.current) {
@@ -57,7 +69,7 @@ const Upload = () => {
     }
   };
 
-  // === Call backend /api/upload ===
+  // === Backend Calls ===
   const handleAnalyze = async () => {
     if (!uploadedFile) return;
     setLoading(true);
@@ -76,6 +88,7 @@ const Upload = () => {
       } else {
         setSummary(data.summary);
         setRisks(data.risks);
+        setClauses(data.clauses);
         setDocId(data.doc_id);
       }
     } catch (err) {
@@ -86,7 +99,6 @@ const Upload = () => {
     }
   };
 
-  // === Call backend /api/query ===
   const handleQuery = async () => {
     if (!docId || !question.trim()) return;
     try {
@@ -235,36 +247,88 @@ const Upload = () => {
             )}
           </div>
 
-          {/* Show summary after analysis */}
-          {summary && (
-            <div className="mt-8 p-6 bg-secondary/20 rounded-lg shadow">
-              <h3 className="font-heading font-bold text-2xl mb-4">
-                Document Summary
-              </h3>
-              <pre className="whitespace-pre-wrap text-sm bg-white p-4 rounded border">
-                {summary}
-              </pre>
-            </div>
-          )}
+          {/* Results in Accordion */}
+          <Accordion type="single" collapsible className="mt-8 space-y-4">
+            {summary && (
+              <AccordionItem value="summary">
+                <AccordionTrigger>
+                  <span className="text-2xl font-bold">📄 Document Summary</span>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <div className="prose max-w-none text-gray-700 leading-relaxed">
+                    <ReactMarkdown>{summary}</ReactMarkdown>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            )}
 
-          {/* Show risks after analysis */}
-          {risks && (
-            <div className="mt-8 p-6 bg-red-50 rounded-lg shadow">
-              <h3 className="font-heading font-bold text-2xl mb-4 text-red-700">
-                Potential Risks & Clauses
-              </h3>
-              <pre className="whitespace-pre-wrap text-sm bg-white p-4 rounded border border-red-200">
-                {risks}
-              </pre>
-            </div>
-          )}
+            {risks && (
+              <AccordionItem value="risks">
+                <AccordionTrigger>
+                  <span className="text-2xl font-bold text-red-700">
+                    ⚠️ Risk Analysis
+                  </span>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <ul className="list-disc list-inside space-y-2 text-red-800">
+                    {risks
+                      .split("\n")
+                      .filter((line) => line.trim() !== "")
+                      .map((line, i) => (
+                        <li key={i}>
+                          <ReactMarkdown>{line}</ReactMarkdown>
+                        </li>
+                      ))}
+                  </ul>
+                </AccordionContent>
+              </AccordionItem>
+            )}
 
-          {/* Ask Question */}
+            {clauses && (
+              <AccordionItem value="clauses">
+                <AccordionTrigger>
+                  <span className="text-2xl font-bold">🔍 Clauses & Risks</span>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <table className="w-full border-collapse">
+                    <thead>
+                      <tr className="bg-gray-100">
+                        <th className="border p-2 text-left">Category</th>
+                        <th className="border p-2 text-left">Clause</th>
+                        <th className="border p-2 text-left">Risk</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {clauses.map((c, i) => (
+                        <tr key={i}>
+                          <td className="border p-2 font-semibold">
+                            {c.category}
+                          </td>
+                          <td className="border p-2">{c.clause}</td>
+                          <td
+                            className={`border p-2 font-bold ${
+                              c.risk === "High"
+                                ? "text-red-600"
+                                : c.risk === "Medium"
+                                ? "text-orange-500"
+                                : "text-green-600"
+                            }`}
+                          >
+                            {c.risk}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </AccordionContent>
+              </AccordionItem>
+            )}
+          </Accordion>
+
+          {/* Ask a Question */}
           {docId && (
-            <div className="mt-8 p-6 bg-secondary/20 rounded-lg shadow">
-              <h3 className="font-heading font-bold text-2xl mb-4">
-                Ask a Question
-              </h3>
+            <div className="mt-8 p-6 bg-blue-50 rounded-lg shadow border border-blue-200">
+              <h3 className="text-2xl font-bold mb-4">❓ Ask a Question</h3>
               <div className="flex space-x-2 mb-4">
                 <input
                   type="text"
@@ -278,13 +342,68 @@ const Upload = () => {
                 </Button>
               </div>
               {answer && (
-                <div className="mt-4 bg-white p-4 rounded border">
-                  <h4 className="font-semibold mb-2">Answer</h4>
-                  <p>{answer}</p>
+                <div className="mt-4 space-y-2">
+                  <div className="bg-white p-3 rounded border shadow-sm">
+                    <p className="font-semibold text-gray-700">User:</p>
+                    <p>{question}</p>
+                  </div>
+                  <div className="bg-green-50 p-3 rounded border shadow-sm">
+                    <p className="font-semibold text-gray-700">AI Answer:</p>
+                    <ReactMarkdown>{answer}</ReactMarkdown>
+                  </div>
                 </div>
               )}
             </div>
           )}
+        </div>
+      </section>
+
+      {/* Feature Reminder */}
+      <section className="py-20 bg-secondary/30">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="font-heading font-bold text-3xl text-foreground mb-8 text-center">
+              What You'll Get After Analysis
+            </h2>
+            <div className="grid md:grid-cols-2 gap-8">
+              <FeatureCard
+                title="Instant Summarization"
+                description="Get a clear, concise summary highlighting the most important clauses and terms in plain English."
+                image={summarizationIcon}
+                linkTo="/features"
+              />
+              <FeatureCard
+                title="Risk Assessment"
+                description="Visual highlighting of potentially problematic clauses, hidden fees, and unfavorable terms."
+                image={highlightingIcon}
+                linkTo="/features"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Privacy Notice */}
+      <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="max-w-3xl mx-auto text-center space-y-6">
+          <div className="flex items-center justify-center space-x-2 text-success">
+            <Shield className="w-6 h-6" />
+            <h3 className="font-semibold text-lg">Your Privacy is Protected</h3>
+          </div>
+          <p className="text-muted-foreground leading-relaxed">
+            Your documents are processed securely and are never permanently
+            stored on our servers. We use enterprise-grade encryption and delete
+            all uploaded files immediately after analysis. Your data remains
+            completely confidential.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button asChild variant="outline">
+              <Link to="/features">Learn More About Our Features</Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link to="/">Back to Home</Link>
+            </Button>
+          </div>
         </div>
       </section>
     </div>
