@@ -31,8 +31,36 @@ const Upload = () => {
   const [docId, setDocId] = useState<string | null>(null);
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState<string | null>(null);
+  const [openAccordion, setOpenAccordion] = useState<string | undefined>(
+    undefined
+  );
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // ✅ Refs for accordion scroll
+  const summaryRef = useRef<HTMLDivElement>(null);
+  const risksRef = useRef<HTMLDivElement>(null);
+  const clausesRef = useRef<HTMLDivElement>(null);
+  const answerRef = useRef<HTMLDivElement>(null);
+
+  const scrollToSection = (ref: React.RefObject<HTMLDivElement>) => {
+    if (ref.current) {
+      const yOffset = -80; // adjust for sticky header
+      const y =
+        ref.current.getBoundingClientRect().top + window.scrollY + yOffset;
+      window.scrollTo({ top: y, behavior: "smooth" });
+    }
+  };
+
+  // ✅ Handle accordion open + scroll
+  const handleAccordionChange = (value: string | undefined) => {
+    setOpenAccordion(value);
+    setTimeout(() => {
+      if (value === "summary") scrollToSection(summaryRef);
+      if (value === "risks") scrollToSection(risksRef);
+      if (value === "clauses") scrollToSection(clausesRef);
+    }, 200);
+  };
 
   // === File Handlers ===
   const handleDrag = (e: React.DragEvent) => {
@@ -64,6 +92,7 @@ const Upload = () => {
     setClauses(null);
     setDocId(null);
     setAnswer(null);
+    setOpenAccordion(undefined);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -90,6 +119,12 @@ const Upload = () => {
         setRisks(data.risks);
         setClauses(data.clauses);
         setDocId(data.doc_id);
+
+        // ✅ Auto-open summary after analysis
+        setTimeout(() => {
+          setOpenAccordion("summary");
+          scrollToSection(summaryRef);
+        }, 300);
       }
     } catch (err) {
       console.error("Upload failed:", err);
@@ -112,6 +147,7 @@ const Upload = () => {
         alert("Error: " + data.error);
       } else {
         setAnswer(data.answer);
+        setTimeout(() => scrollToSection(answerRef), 200);
       }
     } catch (err) {
       console.error("Query failed:", err);
@@ -248,86 +284,105 @@ const Upload = () => {
           </div>
 
           {/* Results in Accordion */}
-          <Accordion type="single" collapsible className="mt-8 space-y-4">
+          <Accordion
+            type="single"
+            collapsible
+            value={openAccordion}
+            onValueChange={handleAccordionChange}
+            className="mt-8 space-y-4"
+          >
             {summary && (
-              <AccordionItem value="summary">
-                <AccordionTrigger>
-                  <span className="text-2xl font-bold">📄 Document Summary</span>
-                </AccordionTrigger>
-                <AccordionContent>
-                  <div className="prose max-w-none text-gray-700 leading-relaxed">
-                    <ReactMarkdown>{summary}</ReactMarkdown>
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
+              <div ref={summaryRef}>
+                <AccordionItem value="summary">
+                  <AccordionTrigger>
+                    <span className="text-2xl font-bold">
+                      📄 Document Summary
+                    </span>
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <div className="prose max-w-none text-gray-700 leading-relaxed">
+                      <ReactMarkdown>{summary}</ReactMarkdown>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </div>
             )}
 
             {risks && (
-              <AccordionItem value="risks">
-                <AccordionTrigger>
-                  <span className="text-2xl font-bold text-red-700">
-                    ⚠️ Risk Analysis
-                  </span>
-                </AccordionTrigger>
-                <AccordionContent>
-                  <ul className="list-disc list-inside space-y-2 text-red-800">
-                    {risks
-                      .split("\n")
-                      .filter((line) => line.trim() !== "")
-                      .map((line, i) => (
-                        <li key={i}>
-                          <ReactMarkdown>{line}</ReactMarkdown>
-                        </li>
-                      ))}
-                  </ul>
-                </AccordionContent>
-              </AccordionItem>
+              <div ref={risksRef}>
+                <AccordionItem value="risks">
+                  <AccordionTrigger>
+                    <span className="text-2xl font-bold text-red-700">
+                      ⚠️ Risk Analysis
+                    </span>
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <ul className="list-disc list-inside space-y-2 text-red-800">
+                      {risks
+                        .split("\n")
+                        .filter((line) => line.trim() !== "")
+                        .map((line, i) => (
+                          <li key={i}>
+                            <ReactMarkdown>{line}</ReactMarkdown>
+                          </li>
+                        ))}
+                    </ul>
+                  </AccordionContent>
+                </AccordionItem>
+              </div>
             )}
 
             {clauses && (
-              <AccordionItem value="clauses">
-                <AccordionTrigger>
-                  <span className="text-2xl font-bold">🔍 Clauses & Risks</span>
-                </AccordionTrigger>
-                <AccordionContent>
-                  <table className="w-full border-collapse">
-                    <thead>
-                      <tr className="bg-gray-100">
-                        <th className="border p-2 text-left">Category</th>
-                        <th className="border p-2 text-left">Clause</th>
-                        <th className="border p-2 text-left">Risk</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {clauses.map((c, i) => (
-                        <tr key={i}>
-                          <td className="border p-2 font-semibold">
-                            {c.category}
-                          </td>
-                          <td className="border p-2">{c.clause}</td>
-                          <td
-                            className={`border p-2 font-bold ${
-                              c.risk === "High"
-                                ? "text-red-600"
-                                : c.risk === "Medium"
-                                ? "text-orange-500"
-                                : "text-green-600"
-                            }`}
-                          >
-                            {c.risk}
-                          </td>
+              <div ref={clausesRef}>
+                <AccordionItem value="clauses">
+                  <AccordionTrigger>
+                    <span className="text-2xl font-bold">
+                      🔍 Clauses & Risks
+                    </span>
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <table className="w-full border-collapse">
+                      <thead>
+                        <tr className="bg-gray-100">
+                          <th className="border p-2 text-left">Category</th>
+                          <th className="border p-2 text-left">Clause</th>
+                          <th className="border p-2 text-left">Risk</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </AccordionContent>
-              </AccordionItem>
+                      </thead>
+                      <tbody>
+                        {clauses.map((c, i) => (
+                          <tr key={i}>
+                            <td className="border p-2 font-semibold">
+                              {c.category}
+                            </td>
+                            <td className="border p-2">{c.clause}</td>
+                            <td
+                              className={`border p-2 font-bold ${
+                                c.risk === "High"
+                                  ? "text-red-600"
+                                  : c.risk === "Medium"
+                                  ? "text-orange-500"
+                                  : "text-green-600"
+                              }`}
+                            >
+                              {c.risk}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </AccordionContent>
+                </AccordionItem>
+              </div>
             )}
           </Accordion>
 
           {/* Ask a Question */}
           {docId && (
-            <div className="mt-8 p-6 bg-blue-50 rounded-lg shadow border border-blue-200">
+            <div
+              ref={answerRef}
+              className="mt-8 p-6 bg-blue-50 rounded-lg shadow border border-blue-200"
+            >
               <h3 className="text-2xl font-bold mb-4">❓ Ask a Question</h3>
               <div className="flex space-x-2 mb-4">
                 <input

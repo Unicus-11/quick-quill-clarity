@@ -1,43 +1,63 @@
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Menu, X, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
 
   const navItems = [
     { name: "Home", path: "/" },
     { name: "Upload", path: "/upload" },
+    { name: "Features", path: "/#features" }, // ✅ add anchor
   ];
 
-  const isActive = (path: string) => location.pathname === path;
+  const isActive = (path: string) => {
+    if (path.includes("#")) {
+      return location.pathname === "/" && location.hash === path.split("#")[1];
+    }
+    return location.pathname === path;
+  };
 
-  // Only show header on home page
-  if (location.pathname !== "/") {
-    return null;
-  }
+  const handleNavClick = (path: string) => {
+    if (path.includes("#")) {
+      const [base, hash] = path.split("#");
+      if (location.pathname !== base) {
+        // navigate to base first
+        navigate(base + "#" + hash);
+        setTimeout(() => {
+          document.getElementById(hash)?.scrollIntoView({ behavior: "smooth" });
+        }, 100);
+      } else {
+        document.getElementById(hash)?.scrollIntoView({ behavior: "smooth" });
+      }
+    } else {
+      navigate(path);
+    }
+    setIsMenuOpen(false);
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full bg-card/95 backdrop-blur-sm border-b border-border shadow-sm">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link 
-            to="/" 
+          <button
+            onClick={() => handleNavClick("/")}
             className="flex items-center space-x-2 text-primary hover:text-primary-light transition-colors"
           >
             <FileText className="h-8 w-8" />
             <span className="font-heading font-bold text-xl">Quick Quill</span>
-          </Link>
+          </button>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
             {navItems.map((item) => (
-              <Link
+              <button
                 key={item.name}
-                to={item.path}
+                onClick={() => handleNavClick(item.path)}
                 className={`font-medium transition-colors hover:text-primary relative ${
                   isActive(item.path)
                     ? "text-primary"
@@ -48,14 +68,17 @@ const Header = () => {
                 {isActive(item.path) && (
                   <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-accent rounded-full" />
                 )}
-              </Link>
+              </button>
             ))}
           </nav>
 
           {/* Get Started Button */}
           <div className="hidden md:block">
-            <Button asChild className="bg-gradient-accent hover:shadow-glow transition-all duration-300">
-              <Link to="/upload">Get Started</Link>
+            <Button
+              onClick={() => handleNavClick("/upload")}
+              className="bg-gradient-accent hover:shadow-glow transition-all duration-300"
+            >
+              Get Started
             </Button>
           </div>
 
@@ -74,23 +97,23 @@ const Header = () => {
           <div className="md:hidden py-4 border-t border-border animate-fade-in">
             <nav className="flex flex-col space-y-4">
               {navItems.map((item) => (
-                <Link
+                <button
                   key={item.name}
-                  to={item.path}
+                  onClick={() => handleNavClick(item.path)}
                   className={`font-medium py-2 px-4 rounded-lg transition-colors ${
                     isActive(item.path)
                       ? "text-primary bg-secondary"
                       : "text-muted-foreground hover:text-primary hover:bg-secondary/50"
                   }`}
-                  onClick={() => setIsMenuOpen(false)}
                 >
                   {item.name}
-                </Link>
+                </button>
               ))}
-              <Button asChild className="bg-gradient-accent mt-4 mx-4">
-                <Link to="/upload" onClick={() => setIsMenuOpen(false)}>
-                  Get Started
-                </Link>
+              <Button
+                onClick={() => handleNavClick("/upload")}
+                className="bg-gradient-accent mt-4 mx-4"
+              >
+                Get Started
               </Button>
             </nav>
           </div>

@@ -8,6 +8,7 @@ import Footer from "@/components/Footer";
 import Index from "./pages/Index";
 import Upload from "./pages/Upload";
 import NotFound from "./pages/NotFound";
+import ScrollToTop from "@/components/ScrollToTop";  // ✅ Import scroll handler
 
 const queryClient = new QueryClient();
 
@@ -17,13 +18,16 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        {/* ✅ Always reset scroll on route change */}
+        <ScrollToTop />   
+
         <div className="min-h-screen flex flex-col bg-background">
           <Header />
           <main className="flex-1">
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/upload" element={<Upload />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              {/* Catch-all route */}
               <Route path="*" element={<NotFound />} />
             </Routes>
           </main>
