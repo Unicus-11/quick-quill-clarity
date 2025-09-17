@@ -1,5 +1,5 @@
 import ReactMarkdown from "react-markdown";
-import { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import FeatureCard from "@/components/FeatureCard";
@@ -31,36 +31,16 @@ const Upload = () => {
   const [docId, setDocId] = useState<string | null>(null);
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState<string | null>(null);
-  const [openAccordion, setOpenAccordion] = useState<string | undefined>(
-    undefined
-  );
+
+  // Controlled accordion value
+  const [openItem, setOpenItem] = useState<string | undefined>(undefined);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // ✅ Refs for accordion scroll
-  const summaryRef = useRef<HTMLDivElement>(null);
-  const risksRef = useRef<HTMLDivElement>(null);
-  const clausesRef = useRef<HTMLDivElement>(null);
-  const answerRef = useRef<HTMLDivElement>(null);
-
-  const scrollToSection = (ref: React.RefObject<HTMLDivElement>) => {
-    if (ref.current) {
-      const yOffset = -80; // adjust for sticky header
-      const y =
-        ref.current.getBoundingClientRect().top + window.scrollY + yOffset;
-      window.scrollTo({ top: y, behavior: "smooth" });
-    }
-  };
-
-  // ✅ Handle accordion open + scroll
-  const handleAccordionChange = (value: string | undefined) => {
-    setOpenAccordion(value);
-    setTimeout(() => {
-      if (value === "summary") scrollToSection(summaryRef);
-      if (value === "risks") scrollToSection(risksRef);
-      if (value === "clauses") scrollToSection(clausesRef);
-    }, 200);
-  };
+  // Refs for scrolling to accordion items
+  const summaryRef = useRef<HTMLDivElement | null>(null);
+  const risksRef = useRef<HTMLDivElement | null>(null);
+  const clausesRef = useRef<HTMLDivElement | null>(null);
 
   // === File Handlers ===
   const handleDrag = (e: React.DragEvent) => {
@@ -92,7 +72,7 @@ const Upload = () => {
     setClauses(null);
     setDocId(null);
     setAnswer(null);
-    setOpenAccordion(undefined);
+    setOpenItem(undefined);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -120,11 +100,8 @@ const Upload = () => {
         setClauses(data.clauses);
         setDocId(data.doc_id);
 
-        // ✅ Auto-open summary after analysis
-        setTimeout(() => {
-          setOpenAccordion("summary");
-          scrollToSection(summaryRef);
-        }, 300);
+        // open the summary by default after analysis
+        setOpenItem("summary");
       }
     } catch (err) {
       console.error("Upload failed:", err);
@@ -147,7 +124,6 @@ const Upload = () => {
         alert("Error: " + data.error);
       } else {
         setAnswer(data.answer);
-        setTimeout(() => scrollToSection(answerRef), 200);
       }
     } catch (err) {
       console.error("Query failed:", err);
@@ -168,6 +144,43 @@ const Upload = () => {
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
+
+  // Scroll helper: open accordion and scroll so the **title** and start of content are visible.
+  const scrollToSection = (section: "summary" | "risks" | "clauses") => {
+    setOpenItem(section); // ensure accordion opens
+    // allow accordion animation/DOM to settle
+    setTimeout(() => {
+      let el: HTMLDivElement | null = null;
+      if (section === "summary") el = summaryRef.current;
+      else if (section === "risks") el = risksRef.current;
+      else if (section === "clauses") el = clausesRef.current;
+
+      if (el) {
+        const headerOffset = 96; // adjust to match your sticky header height
+        const top = el.getBoundingClientRect().top + window.scrollY - headerOffset;
+        window.scrollTo({ top, behavior: "smooth" });
+      }
+    }, 180);
+  };
+
+  // When user opens accordion via other means, also scroll so title shows
+  useEffect(() => {
+    if (!openItem) return;
+    const t = setTimeout(() => {
+      let el: HTMLDivElement | null = null;
+      if (openItem === "summary") el = summaryRef.current;
+      else if (openItem === "risks") el = risksRef.current;
+      else if (openItem === "clauses") el = clausesRef.current;
+
+      if (el) {
+        const headerOffset = 96;
+        const top = el.getBoundingClientRect().top + window.scrollY - headerOffset;
+        window.scrollTo({ top, behavior: "smooth" });
+      }
+    }, 140);
+
+    return () => clearTimeout(t);
+  }, [openItem]);
 
   return (
     <div className="min-h-screen py-12">
@@ -204,13 +217,8 @@ const Upload = () => {
                 <h3 className="font-semibold text-xl text-foreground mb-2">
                   Drag and drop your document here
                 </h3>
-                <p className="text-muted-foreground mb-6">
-                  or click to browse and select a file
-                </p>
-                <Button
-                  onClick={() => fileInputRef.current?.click()}
-                  className="bg-primary hover:bg-primary-dark"
-                >
+                <p className="text-muted-foreground mb-6">or click to browse and select a file</p>
+                <Button onClick={() => fileInputRef.current?.click()} className="bg-primary hover:bg-primary-dark">
                   Choose File
                 </Button>
                 <input
@@ -228,12 +236,9 @@ const Upload = () => {
                   <div className="flex items-center space-x-3">
                     <FileText className="w-8 h-8 text-primary" />
                     <div>
-                      <h3 className="font-semibold text-foreground">
-                        {uploadedFile.name}
-                      </h3>
+                      <h3 className="font-semibold text-foreground">{uploadedFile.name}</h3>
                       <p className="text-muted-foreground text-sm">
-                        {formatFileSize(uploadedFile.size)} •{" "}
-                        {uploadedFile.type || "Unknown type"}
+                        {formatFileSize(uploadedFile.size)} • {uploadedFile.type || "Unknown type"}
                       </p>
                     </div>
                   </div>
@@ -243,12 +248,7 @@ const Upload = () => {
                     ) : (
                       <AlertCircle className="w-6 h-6 text-destructive" />
                     )}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={removeFile}
-                      className="text-muted-foreground hover:text-destructive"
-                    >
+                    <Button variant="ghost" size="sm" onClick={removeFile} className="text-muted-foreground hover:text-destructive">
                       <X className="w-4 h-4" />
                     </Button>
                   </div>
@@ -273,50 +273,35 @@ const Upload = () => {
                   </div>
                 ) : (
                   <div className="text-center text-muted-foreground">
-                    <p className="text-destructive mb-2">
-                      Unsupported file type. Please upload a PDF, DOCX, TXT, or
-                      RTF file.
-                    </p>
+                    <p className="text-destructive mb-2">Unsupported file type. Please upload a PDF, DOCX, TXT, or RTF file.</p>
                   </div>
                 )}
               </div>
             )}
           </div>
 
-          {/* Results in Accordion */}
-          <Accordion
-            type="single"
-            collapsible
-            value={openAccordion}
-            onValueChange={handleAccordionChange}
-            className="mt-8 space-y-4"
-          >
+          {/* Results in Accordion - controlled by openItem */}
+          <Accordion type="single" collapsible className="mt-8 space-y-4" value={openItem} onValueChange={(v: any) => setOpenItem(v || undefined)}>
             {summary && (
-              <div ref={summaryRef}>
-                <AccordionItem value="summary">
-                  <AccordionTrigger>
-                    <span className="text-2xl font-bold">
-                      📄 Document Summary
-                    </span>
-                  </AccordionTrigger>
-                  <AccordionContent>
-                    <div className="prose max-w-none text-gray-700 leading-relaxed">
-                      <ReactMarkdown>{summary}</ReactMarkdown>
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
-              </div>
+              <AccordionItem value="summary">
+                <AccordionTrigger>
+                  <span className="text-2xl font-bold">📄 Document Summary</span>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <div ref={summaryRef} className="prose max-w-none text-gray-700 leading-relaxed">
+                    <ReactMarkdown>{summary}</ReactMarkdown>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
             )}
 
             {risks && (
-              <div ref={risksRef}>
-                <AccordionItem value="risks">
-                  <AccordionTrigger>
-                    <span className="text-2xl font-bold text-red-700">
-                      ⚠️ Risk Analysis
-                    </span>
-                  </AccordionTrigger>
-                  <AccordionContent>
+              <AccordionItem value="risks">
+                <AccordionTrigger>
+                  <span className="text-2xl font-bold text-red-700">⚠️ Risk Analysis</span>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <div ref={risksRef}>
                     <ul className="list-disc list-inside space-y-2 text-red-800">
                       {risks
                         .split("\n")
@@ -327,20 +312,18 @@ const Upload = () => {
                           </li>
                         ))}
                     </ul>
-                  </AccordionContent>
-                </AccordionItem>
-              </div>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
             )}
 
             {clauses && (
-              <div ref={clausesRef}>
-                <AccordionItem value="clauses">
-                  <AccordionTrigger>
-                    <span className="text-2xl font-bold">
-                      🔍 Clauses & Risks
-                    </span>
-                  </AccordionTrigger>
-                  <AccordionContent>
+              <AccordionItem value="clauses">
+                <AccordionTrigger>
+                  <span className="text-2xl font-bold">🔍 Clauses & Risks</span>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <div ref={clausesRef}>
                     <table className="w-full border-collapse">
                       <thead>
                         <tr className="bg-gray-100">
@@ -352,17 +335,11 @@ const Upload = () => {
                       <tbody>
                         {clauses.map((c, i) => (
                           <tr key={i}>
-                            <td className="border p-2 font-semibold">
-                              {c.category}
-                            </td>
+                            <td className="border p-2 font-semibold">{c.category}</td>
                             <td className="border p-2">{c.clause}</td>
                             <td
                               className={`border p-2 font-bold ${
-                                c.risk === "High"
-                                  ? "text-red-600"
-                                  : c.risk === "Medium"
-                                  ? "text-orange-500"
-                                  : "text-green-600"
+                                c.risk === "High" ? "text-red-600" : c.risk === "Medium" ? "text-orange-500" : "text-green-600"
                               }`}
                             >
                               {c.risk}
@@ -371,18 +348,15 @@ const Upload = () => {
                         ))}
                       </tbody>
                     </table>
-                  </AccordionContent>
-                </AccordionItem>
-              </div>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
             )}
           </Accordion>
 
           {/* Ask a Question */}
           {docId && (
-            <div
-              ref={answerRef}
-              className="mt-8 p-6 bg-blue-50 rounded-lg shadow border border-blue-200"
-            >
+            <div className="mt-8 p-6 bg-blue-50 rounded-lg shadow border border-blue-200">
               <h3 className="text-2xl font-bold mb-4">❓ Ask a Question</h3>
               <div className="flex space-x-2 mb-4">
                 <input
@@ -417,21 +391,26 @@ const Upload = () => {
       <section className="py-20 bg-secondary/30">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto">
-            <h2 className="font-heading font-bold text-3xl text-foreground mb-8 text-center">
-              What You'll Get After Analysis
-            </h2>
+            <h2 className="font-heading font-bold text-3xl text-foreground mb-8 text-center">What You'll Get After Analysis</h2>
             <div className="grid md:grid-cols-2 gap-8">
               <FeatureCard
                 title="Instant Summarization"
                 description="Get a clear, concise summary highlighting the most important clauses and terms in plain English."
                 image={summarizationIcon}
-                linkTo="/features"
+                // use onClick (renders as button) to open+scroll summary
+                onClick={(e) => {
+                  e.preventDefault();
+                  scrollToSection("summary");
+                }}
               />
               <FeatureCard
                 title="Risk Assessment"
                 description="Visual highlighting of potentially problematic clauses, hidden fees, and unfavorable terms."
                 image={highlightingIcon}
-                linkTo="/features"
+                onClick={(e) => {
+                  e.preventDefault();
+                  scrollToSection("risks");
+                }}
               />
             </div>
           </div>
@@ -446,10 +425,7 @@ const Upload = () => {
             <h3 className="font-semibold text-lg">Your Privacy is Protected</h3>
           </div>
           <p className="text-muted-foreground leading-relaxed">
-            Your documents are processed securely and are never permanently
-            stored on our servers. We use enterprise-grade encryption and delete
-            all uploaded files immediately after analysis. Your data remains
-            completely confidential.
+            Your documents are processed securely and are never permanently stored on our servers. We use enterprise-grade encryption and delete all uploaded files immediately after analysis. Your data remains completely confidential.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button asChild variant="outline">
