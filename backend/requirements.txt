@@ -1,6 +1,17 @@
-Flask
+# Backend framework
+flask
+flask-cors
+python-dotenv
+
+# Google Generative AI SDK
 google-genai
-pdfminer.six
+
+# Groq SDK
+groq
+
+# File handling
 python-docx
+pdfminer.six
+
+# Utilities
 werkzeug
-flask_cors
