@@ -125,6 +125,14 @@ python app.py
 
 ```
 
+### For .env
+
+```
+LLM_PROVIDER=google
+GOOGLE_API_KEY=sk-your-real-key
+GOOGLE_MODEL=gemini-1.5-flash
+```
+
 ### Your app will be live on:
 
 ## Frontend → http://localhost:5173 (default for Vite/React)
