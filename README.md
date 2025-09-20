@@ -1,73 +1,124 @@
-# Welcome to your Lovable project
+# 🖋️ Quick Quill – AI Contract Analyzer  
 
-## Project info
+> ⚡ An AI-powered legal assistant that **summarizes, analyzes risks, and enables chatbot interactions** with contracts.  
+> Built for the **Gen AI Exchange Hackathon 2025**.  
 
-**URL**: https://lovable.dev/projects/9ba35f63-2275-42ab-b887-53169b5d9f35
+---
 
-## How can I edit this code?
+## 🌟 Why Quick Quill?  
+Contracts are long, complex, and full of hidden risks.  
+**Quick Quill** makes legal documents **understandable in minutes** by:  
+- 📑 Extracting and analyzing **clauses**  
+- ⚖️ Highlighting **risks** (Low / Medium / High)  
+- ✍️ Generating **concise summaries**  
+- 🤖 Providing a **chatbot** to query contracts in plain English  
 
-There are several ways of editing your application.
+---
 
-**Use Lovable**
+## 🚀 Features  
+- 📑 **Clause Analysis** – Identify and highlight important clauses  
+- ⚖️ **Risk Detection** – Assess potential risks with reasoning  
+- ✍️ **Summarization** – AI-generated summaries of lengthy documents  
+- 🤖 **AI Chatbot** – Ask anything about the contract and get instant answers  
+- 🔍 **Explainability** – Each risk tagged with context & rationale  
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/9ba35f63-2275-42ab-b887-53169b5d9f35) and start prompting.
+---
 
-Changes made via Lovable will be committed automatically to this repo.
+## 🛠️ Tech Stack  
+- **Frontend**: React.js  
+- **Backend**: Flask (API)  
+- **ML/NLP Pipeline**:  
+  - Preprocessing (tokenization, cleaning)  
+  - Clause Extraction (NLP-based)  
+  - Summarization (Transformer models)  
+  - Risk Classification (LLM-powered reasoning)  
+  - Chatbot (Retrieval-Augmented QA)  
+- **Database**: SQLite  
+- **Deployment (Future)**: Hugging Face Spaces / Render + Vercel  
 
-**Use your preferred IDE**
+---
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+## 📊 Machine Learning Pipeline  
+```mermaid
+flowchart TD
+    A[Upload Document] --> B[Text Preprocessing]
+    B --> C[Clause Extraction]
+    B --> D[Summarization]
+    C --> E[Risk Analysis]
+    D --> E
+    E --> F[Dashboard Results]
+    F --> G[Chatbot Q&A]
 ```
 
-**Edit a file directly in GitHub**
+## ⚡ How It Works  
+1. Upload a **contract (PDF/TXT)**  
+2. AI extracts clauses & runs **summarization + risk analysis**  
+3. Dashboard displays:  
+   - 📑 Summary  
+   - ⚖️ Risks (Low/Medium/High)  
+   - 🗂️ Highlighted Clauses  
+4. Chatbot answers user queries about the document  
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+---
 
-**Use GitHub Codespaces**
+## 🎯 Impact  
+- ⏱️ Saves **hours of manual reading**  
+- ⚖️ Helps users **spot hidden risks quickly**  
+- 🤝 Makes contracts **accessible to non-lawyers**  
+- 🌍 Can be extended for **legal tech startups & enterprises**  
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+---
 
-## What technologies are used for this project?
+## 📸 Screenshots *(to add later)*  
+- Dashboard  
+- Risk Highlighting  
+- Chatbot Demo  
 
-This project is built with:
+---
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## 📌 Future Scope  
+- Multi-document comparison  
+- Integration with e-signature tools  
+- Fine-tuned models for legal domain  
+- Visual risk heatmaps  
 
-## How can I deploy this project?
+---
 
-Simply open [Lovable](https://lovable.dev/projects/9ba35f63-2275-42ab-b887-53169b5d9f35) and click on Share -> Publish.
+## 👩‍💻 Team / Contribution  
+Developed by **[Your Name]** for **Gen AI Exchange Hackathon 2025** 🚀  
 
-## Can I connect a custom domain to my Lovable project?
+---
 
-Yes, you can!
+## ⚙️ How to Run  
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+### 1️⃣ Frontend (React)  
+```
+# Install dependencies
+npm install
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+# Install react-markdown
+npm install react-markdown
+
+# Start development server
+npm run dev
+
+```
+
+### 2️⃣ Backend (Flask)
+
+```
+cd backend
+
+# Install Python dependencies
+pip install -r requirements.txt
+
+# Run backend
+python app.py
+
+```
+
+### Your app will be live on:
+
+## Frontend → http://localhost:5173 (default for Vite/React)
+
+## Backend API → http://localhost:5000
