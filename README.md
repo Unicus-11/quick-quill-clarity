@@ -128,9 +128,7 @@ python app.py
 ### For .env
 
 ```
-LLM_PROVIDER=google
-GOOGLE_API_KEY=sk-your-real-key
-GOOGLE_MODEL=gemini-1.5-flash
+GOOGLE_API_KEY=your_google_api_key_here
 ```
 
 ### Your app will be live on:
