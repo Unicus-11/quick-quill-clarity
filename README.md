@@ -74,11 +74,11 @@ flowchart TD
 ### 🖥️ Dashboard  
 ![Dashboard](SCREENSHOTS/dashboard.png)  
 
-### 📂 Document Upload & Analysis  
-![Document Upload](SCREENSHOTS/DOCUMENTS%20UPLOAD%20AND%20AN....png)  
-
 ### ⚖️ Features Overview  
-![Features](SCREENSHOTS/features.png)  
+![Features](SCREENSHOTS/features.png)
+
+### 📂 Document Upload & Analysis  
+![Document Upload](SCREENSHOTS/DOCUMENTS%20UPLOAD%20AND%20ANALYSIS.png)  
 
 ### 🤖 Chatbot Feature  
 ![Chatbot](SCREENSHOTS/CHATBOT%20FEATURE.png)  
@@ -93,8 +93,8 @@ flowchart TD
 
 ---
 
-## 👩‍💻 Team / Contribution  
-Developed by **[Your Name]** for **Gen AI Exchange Hackathon 2025** 🚀  
+## 👩‍💻 Team 
+Developed by **Abhishek** and **Disha** for **Gen AI Exchange Hackathon 2025** 🚀  
 
 ---
 
