@@ -62,16 +62,13 @@ def pipeline_analysis(doc_text: str):
 
 # ==== LLM Setup ====
 import google.genai as genai
-from groq import Groq
 
 load_dotenv()
 UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
-GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 google_client = genai.Client(api_key=GOOGLE_API_KEY) if GOOGLE_API_KEY else None
-groq_client = Groq(api_key=GROQ_API_KEY) if GROQ_API_KEY else None
 
 DOCS = {}
 
@@ -88,13 +85,7 @@ def extract_text(path):
     return ""
 
 def call_llm(prompt, mode="summary"):
-    if groq_client:
-        model = "llama-3.1-8b-instant" if mode == "summary" else "llama-3.3-70b-versatile"
-        resp = groq_client.chat.completions.create(
-            model=model, messages=[{"role": "user", "content": prompt}]
-        )
-        return resp.choices[0].message.content.strip()
-    elif google_client:
+    if google_client:
         model = "gemini-1.5-flash" if mode == "summary" else "gemini-1.5-pro"
         resp = google_client.models.generate_content(model=model, contents=prompt)
         return resp.candidates[0].content.parts[0].text.strip()
