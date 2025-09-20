@@ -69,10 +69,19 @@ flowchart TD
 
 ---
 
-## 📸 Screenshots *(to add later)*  
-- Dashboard  
-- Risk Highlighting  
-- Chatbot Demo  
+## 📸 Screenshots  
+
+### 🖥️ Dashboard  
+![Dashboard](SCREENSHOTS/dashboard.png)  
+
+### 📂 Document Upload & Analysis  
+![Document Upload](SCREENSHOTS/DOCUMENTS%20UPLOAD%20AND%20AN....png)  
+
+### ⚖️ Features Overview  
+![Features](SCREENSHOTS/features.png)  
+
+### 🤖 Chatbot Feature  
+![Chatbot](SCREENSHOTS/CHATBOT%20FEATURE.png)  
 
 ---
 
