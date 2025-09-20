@@ -25,15 +25,14 @@ Contracts are long, complex, and full of hidden risks.
 ---
 
 ## 🛠️ Tech Stack  
-- **Frontend**: React.js  
-- **Backend**: Flask (API)  
+- **Frontend**: React.js,Tailwind,Typescript
+- **Backend**: Flask (API-Gemini)  
 - **ML/NLP Pipeline**:  
   - Preprocessing (tokenization, cleaning)  
   - Clause Extraction (NLP-based)  
   - Summarization (Transformer models)  
   - Risk Classification (LLM-powered reasoning)  
   - Chatbot (Retrieval-Augmented QA)  
-- **Database**: SQLite  
 - **Deployment (Future)**: Hugging Face Spaces / Render + Vercel  
 
 ---
@@ -51,7 +50,7 @@ flowchart TD
 ```
 
 ## ⚡ How It Works  
-1. Upload a **contract (PDF/TXT)**  
+1. Upload a **contract (PDF/TXT/DOCX/RTF)**  
 2. AI extracts clauses & runs **summarization + risk analysis**  
 3. Dashboard displays:  
    - 📑 Summary  
