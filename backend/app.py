@@ -5,13 +5,14 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
+from io import BytesIO
 
 # File extractors
 from pdfminer.high_level import extract_text as extract_pdf_text
 import docx
 import re
 
-# ML Pipeline helpers
+# ==== ML Pipeline Helpers ====
 def classify_clause(text: str) -> str:
     """Classify clause by simple keywords"""
     text_lower = text.lower()
@@ -64,25 +65,10 @@ def pipeline_analysis(doc_text: str):
 import google.genai as genai
 
 load_dotenv()
-UPLOAD_FOLDER = "uploads"
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 google_client = genai.Client(api_key=GOOGLE_API_KEY) if GOOGLE_API_KEY else None
 
 DOCS = {}
-
-def extract_text(path):
-    ext = path.split(".")[-1].lower()
-    if ext == "pdf":
-        return extract_pdf_text(path)
-    elif ext == "docx":
-        doc = docx.Document(path)
-        return "\n".join([p.text for p in doc.paragraphs])
-    elif ext == "txt":
-        with open(path, "r", encoding="utf-8", errors="ignore") as f:
-            return f.read()
-    return ""
 
 def call_llm(prompt, mode="summary"):
     if google_client:
@@ -101,10 +87,21 @@ def upload():
         return jsonify({"error": "No file"}), 400
     file = request.files["file"]
     filename = secure_filename(file.filename)
-    path = os.path.join(UPLOAD_FOLDER, filename)
-    file.save(path)
+    ext = filename.split(".")[-1].lower()
 
-    text = extract_text(path)
+    # --- Process in memory, no saving ---
+    text = ""
+    if ext == "pdf":
+        pdf_bytes = BytesIO(file.read())
+        text = extract_pdf_text(pdf_bytes)
+    elif ext == "docx":
+        doc = docx.Document(BytesIO(file.read()))
+        text = "\n".join([p.text for p in doc.paragraphs])
+    elif ext == "txt":
+        text = file.read().decode("utf-8", errors="ignore")
+    else:
+        return jsonify({"error": "Unsupported file type"}), 400
+
     if not text.strip():
         return jsonify({"error": "No text extracted"}), 400
 
