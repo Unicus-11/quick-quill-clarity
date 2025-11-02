@@ -1,7 +1,6 @@
 # 🖋️ Quick Quill – AI Contract Analyzer  
 
-> ⚡ An AI-powered legal assistant that **summarizes, analyzes risks, and enables chatbot interactions** with contracts.  
-> Built for the **Gen AI Exchange Hackathon 2025**.  
+> ⚡ An AI-powered legal assistant that **summarizes, analyzes risks, and enables chatbot interactions** with contracts.   
 
 ---
 
