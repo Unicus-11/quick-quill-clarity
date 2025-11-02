@@ -93,7 +93,7 @@ flowchart TD
 ---
 
 ## 👩‍💻 Team 
-Developed by **Abhishek** and **Disha** for **Gen AI Exchange Hackathon 2025** 🚀  
+Developed by **Abhishek** and **Disha**   
 
 ---
 
